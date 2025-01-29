@@ -1,0 +1,43 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+def auto_canny(image, sigma=0.33):
+    median = np.median(image)
+    lower = int(max(0, (1.0 - sigma) * median))
+    upper = int(min(255, (1.0 + sigma) * median))
+    return cv2.Canny(image, lower, upper)
+
+def process_image(image_path, blur_type="gaussian", ksize=5, sigma=1.0):
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+    if blur_type == "gaussian":
+        smoothed = cv2.GaussianBlur(image, (ksize, ksize), sigma)
+    elif blur_type == "median":
+        smoothed = cv2.medianBlur(image, ksize)
+    elif blur_type == "bilateral":
+        smoothed = cv2.bilateralFilter(image, 9, 75, 75)
+    else:
+        smoothed = image
+
+    edges = auto_canny(smoothed)
+
+    fig, ax = plt.subplots(1, 3, figsize=(15, 5))
+    ax[0].imshow(image, cmap='gray')
+    ax[0].set_title('Original Image')
+    ax[0].axis('off')
+
+    ax[1].imshow(smoothed, cmap='gray')
+    ax[1].set_title(f'Blur: {blur_type}')
+    ax[1].axis('off')
+
+    ax[2].imshow(edges, cmap='gray')
+    ax[2].set_title('Canny Edges')
+    ax[2].axis('off')
+
+    plt.show()
+
+image_path = "your_image.jpg"
+process_image(image_path, blur_type="gaussian", ksize=5, sigma=1.2)
+process_image(image_path, blur_type="median", ksize=5)
+process_image(image_path, blur_type="bilateral")
